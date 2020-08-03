@@ -2,6 +2,7 @@ package main
 
 import (
 	"time"
+	"fmt"
 
 	"github.com/g3n/engine/app"
 	"github.com/g3n/engine/camera"
@@ -16,9 +17,13 @@ import (
 	"github.com/g3n/engine/renderer"
 	"github.com/g3n/engine/util/helper"
 	"github.com/g3n/engine/window"
+
+	"github.com/davidreis97/GoFlightSim/graphics/terrain"
 )
 
 func main() {
+
+	fmt.Printf("start")
 
 	// Create application and scene
 	a := app.App()
@@ -47,31 +52,42 @@ func main() {
 	onResize("", nil)
 
 	// Create a blue torus and add it to the scene
-	geom := geometry.NewTorus(1, .4, 12, 32, math32.Pi*2)
+	geom := geometry.NewGeometry()
+	vertices := math32.ArrayF32{1.0, 0.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0}
+	triVBO := gls.NewVBO(vertices).AddAttrib(gls.VertexPosition)
+	geom.AddVBO(triVBO)
 	mat := material.NewStandard(math32.NewColor("DarkBlue"))
 	mesh := graphic.NewMesh(geom, mat)
 	scene.Add(mesh)
 
-	// Create and add a button to the scene
-	btn := gui.NewButton("Make Red")
-	btn.SetPosition(100, 40)
-	btn.SetSize(40, 40)
-	btn.Subscribe(gui.OnClick, func(name string, ev interface{}) {
-		mat.SetColor(math32.NewColor("DarkRed"))
-	})
-	scene.Add(btn)
+	/*
+		// Create and add a button to the scene
+		btn := gui.NewButton("Make Red")
+		btn.SetPosition(100, 40)
+		btn.SetSize(40, 40)
+		btn.Subscribe(gui.OnClick, func(name string, ev interface{}) {
+			mat.SetColor(math32.NewColor("DarkRed"))
+		})
+		scene.Add(btn)
+	*/
 
 	// Create and add lights to the scene
 	scene.Add(light.NewAmbient(&math32.Color{1.0, 1.0, 1.0}, 0.8))
-	pointLight := light.NewPoint(&math32.Color{1, 1, 1}, 5.0)
-	pointLight.SetPosition(1, 0, 2)
-	scene.Add(pointLight)
+
+	/*
+		pointLight := light.NewPoint(&math32.Color{1, 1, 1}, 5.0)
+		pointLight.SetPosition(1, 0, 2)
+		scene.Add(pointLight)
+	*/
 
 	// Create and add an axis helper to the scene
 	scene.Add(helper.NewAxes(0.5))
 
 	// Set background color to gray
 	a.Gls().ClearColor(0.5, 0.5, 0.5, 1.0)
+
+	gen := terrain.NewGenerator()
+	gen.NewChunk(0,0)
 
 	// Run the application
 	a.Run(func(renderer *renderer.Renderer, deltaTime time.Duration) {
