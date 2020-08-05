@@ -19,6 +19,8 @@ import (
 	"github.com/g3n/engine/window"
 
 	"github.com/davidreis97/GoFlightSim/graphics/terrain"
+	"github.com/davidreis97/GoFlightSim/controller"
+	"github.com/davidreis97/GoFlightSim/physics"
 )
 
 func main() {
@@ -26,7 +28,7 @@ func main() {
 	fmt.Printf("start")
 
 	// Create application and scene
-	a := app.App()
+	app := app.App()
 	scene := core.NewNode()
 
 	// Set the scene to be managed by the gui manager
@@ -43,17 +45,17 @@ func main() {
 	// Set up callback to update viewport and camera aspect ratio when the window is resized
 	onResize := func(evname string, ev interface{}) {
 		// Get framebuffer size and update viewport accordingly
-		width, height := a.GetSize()
-		a.Gls().Viewport(0, 0, int32(width), int32(height))
+		width, height := app.GetSize()
+		app.Gls().Viewport(0, 0, int32(width), int32(height))
 		// Update the camera's aspect ratio
 		cam.SetAspect(float32(width) / float32(height))
 	}
-	a.Subscribe(window.OnWindowSize, onResize)
+	app.Subscribe(window.OnWindowSize, onResize)
 	onResize("", nil)
 
-	// Create a blue torus and add it to the scene
+	// Create app blue torus and add it to the scene
 	geom := geometry.NewGeometry()
-	vertices := math32.ArrayF32{1.0, 0.0, 1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 1.0}
+	vertices := math32.ArrayF32{0.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, -1.0}
 	triVBO := gls.NewVBO(vertices).AddAttrib(gls.VertexPosition)
 	geom.AddVBO(triVBO)
 	mat := material.NewStandard(math32.NewColor("DarkBlue"))
@@ -84,14 +86,23 @@ func main() {
 	scene.Add(helper.NewAxes(0.5))
 
 	// Set background color to gray
-	a.Gls().ClearColor(0.5, 0.5, 0.5, 1.0)
+	app.Gls().ClearColor(0.5, 0.5, 0.5, 1.0)
 
 	gen := terrain.NewGenerator()
 	gen.NewChunk(0,0)
 
+	keyboard := controller.InitKeyboard(app.IWindow)
+	plane := physics.NewPlane(math32.Vector3{0,0,0})
+	mesh.SetMatrix(plane.Transform)
+
 	// Run the application
-	a.Run(func(renderer *renderer.Renderer, deltaTime time.Duration) {
-		a.Gls().Clear(gls.DEPTH_BUFFER_BIT | gls.STENCIL_BUFFER_BIT | gls.COLOR_BUFFER_BIT)
+	app.Run(func(renderer *renderer.Renderer, deltaTime time.Duration) {
+		app.Gls().Clear(gls.DEPTH_BUFFER_BIT | gls.STENCIL_BUFFER_BIT | gls.COLOR_BUFFER_BIT)
 		renderer.Render(scene, cam)
+
+		input := keyboard.ProcessInput()
+		plane.Step(deltaTime,input)
+		mesh.SetMatrix(plane.Transform)
+		//fmt.Println(plane.Transform)
 	})
 }

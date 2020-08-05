@@ -3,7 +3,7 @@ package terrain
 import (
 	"github.com/ojrac/opensimplex-go"
 	"math/rand"
-	"fmt"
+	//"fmt"
 )
 
 // Generator contains the seeded noise instance
@@ -36,8 +36,6 @@ func (g Generator) NewChunk(x, y float64) *Chunk{
 			chunk.Data[xi][yi] = g.GetData(x + float64(xi), y + float64(yi))
 		}
 	}
-
-	fmt.Println(chunk.Data)
 
 	return &chunk
 }
