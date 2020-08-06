@@ -3,29 +3,31 @@ package main
 import (
 	"time"
 	"fmt"
+	"os"
 
 	"github.com/g3n/engine/app"
 	"github.com/g3n/engine/camera"
 	"github.com/g3n/engine/core"
-	"github.com/g3n/engine/geometry"
+	//"github.com/g3n/engine/geometry"
 	"github.com/g3n/engine/gls"
-	"github.com/g3n/engine/graphic"
+	//"github.com/g3n/engine/graphic"
 	"github.com/g3n/engine/gui"
 	"github.com/g3n/engine/light"
-	"github.com/g3n/engine/material"
+	//"github.com/g3n/engine/material"
 	"github.com/g3n/engine/math32"
 	"github.com/g3n/engine/renderer"
 	"github.com/g3n/engine/util/helper"
 	"github.com/g3n/engine/window"
 
 	"github.com/davidreis97/GoFlightSim/graphics/terrain"
+	"github.com/davidreis97/GoFlightSim/graphics/airplane"
 	"github.com/davidreis97/GoFlightSim/controller"
 	"github.com/davidreis97/GoFlightSim/physics"
 )
 
 func main() {
 
-	fmt.Printf("start")
+	fmt.Printf("start") 
 
 	// Create application and scene
 	app := app.App()
@@ -54,13 +56,21 @@ func main() {
 	onResize("", nil)
 
 	// Create app blue torus and add it to the scene
+	/*
 	geom := geometry.NewGeometry()
 	vertices := math32.ArrayF32{0.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, -1.0}
 	triVBO := gls.NewVBO(vertices).AddAttrib(gls.VertexPosition)
 	geom.AddVBO(triVBO)
 	mat := material.NewStandard(math32.NewColor("DarkBlue"))
-	mesh := graphic.NewMesh(geom, mat)
-	scene.Add(mesh)
+	mesh := graphic.NewMesh(geom, mat)*/
+
+	airplaneMesh, err := airplane.Init()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+
+	scene.Add(airplaneMesh)
 
 	/*
 		// Create and add a button to the scene
@@ -93,7 +103,7 @@ func main() {
 
 	keyboard := controller.InitKeyboard(app.IWindow)
 	plane := physics.NewPlane(math32.Vector3{0,0,0})
-	mesh.SetMatrix(plane.Transform)
+	airplaneMesh.SetMatrix(plane.Transform)
 
 	// Run the application
 	app.Run(func(renderer *renderer.Renderer, deltaTime time.Duration) {
@@ -102,7 +112,7 @@ func main() {
 
 		input := keyboard.ProcessInput()
 		plane.Step(deltaTime,input)
-		mesh.SetMatrix(plane.Transform)
+		airplaneMesh.SetMatrix(plane.Transform)
 		//fmt.Println(plane.Transform)
 	})
 }
