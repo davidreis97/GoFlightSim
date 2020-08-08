@@ -27,7 +27,7 @@ import (
 
 func main() {
 
-	fmt.Printf("start") 
+	fmt.Println("start") 
 
 	// Create application and scene
 	app := app.App()
@@ -38,11 +38,7 @@ func main() {
 
 	// Create perspective camera
 	cam := camera.New(1)
-	cam.SetPosition(0, 0, 3)
 	scene.Add(cam)
-
-	// Set up orbit control for the camera
-	camera.NewOrbitControl(cam)
 
 	// Set up callback to update viewport and camera aspect ratio when the window is resized
 	onResize := func(evname string, ev interface{}) {
@@ -103,7 +99,13 @@ func main() {
 
 	keyboard := controller.InitKeyboard(app.IWindow)
 	plane := physics.NewPlane(math32.Vector3{0,0,0})
+	plane.Transform.Scale(&math32.Vector3{0.1,0.1,0.1})
 	airplaneMesh.SetMatrix(plane.Transform)
+	
+	cameraOffsetTranslate := math32.NewMatrix4().MakeTranslation(0, 10, 30)
+	cameraOffsetRotate := math32.NewMatrix4().MakeRotationX(-0.2)
+
+	cameraOffset := cameraOffsetRotate.Multiply(cameraOffsetTranslate)
 
 	// Run the application
 	app.Run(func(renderer *renderer.Renderer, deltaTime time.Duration) {
@@ -113,6 +115,8 @@ func main() {
 		input := keyboard.ProcessInput()
 		plane.Step(deltaTime,input)
 		airplaneMesh.SetMatrix(plane.Transform)
-		//fmt.Println(plane.Transform)
+		cameraMat := plane.Transform.Clone()
+		cameraMat.Multiply(cameraOffset)
+		cam.SetMatrix(cameraMat)
 	})
 }
