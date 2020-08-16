@@ -26,8 +26,8 @@ func NewPlane(pos math32.Vector3) *Plane {
 func (p *Plane) Step(timeElapsed time.Duration, input controller.Input){
 	tmpMatrix := math32.NewMatrix4()
 
-	p.Transform.Multiply(tmpMatrix.MakeTranslation(0,0,-input.Thrust * 0.01))
-	p.Transform.Multiply(tmpMatrix.MakeRotationX(input.Pitch * 0.01))
-	p.Transform.Multiply(tmpMatrix.MakeRotationY(input.Yaw * 0.01))
-	p.Transform.Multiply(tmpMatrix.MakeRotationZ(input.Roll * 0.01))
+	p.Transform.Multiply(tmpMatrix.MakeTranslation(0,0,(-0.4 + (-input.Thrust * 0.3)) * float32(timeElapsed.Milliseconds())))
+	p.Transform.Multiply(tmpMatrix.MakeRotationX(-input.Pitch * 0.002 * float32(timeElapsed.Milliseconds())))
+	p.Transform.Multiply(tmpMatrix.MakeRotationY(-input.Yaw * 0.002 * float32(timeElapsed.Milliseconds())))
+	p.Transform.Multiply(tmpMatrix.MakeRotationZ(-input.Roll * 0.002 * float32(timeElapsed.Milliseconds())))
 }
