@@ -38,6 +38,7 @@ func main() {
 
 	// Create perspective camera
 	cam := camera.New(1)
+	cam.SetFar(1000000)
 	scene.Add(cam)
 
 	// Set up callback to update viewport and camera aspect ratio when the window is resized
@@ -51,21 +52,12 @@ func main() {
 	app.Subscribe(window.OnWindowSize, onResize)
 	onResize("", nil)
 
-	// Create app blue torus and add it to the scene
-	/*
-	geom := geometry.NewGeometry()
-	vertices := math32.ArrayF32{0.0, 0.0, 1.0, 1.0, 0.0, -1.0, -1.0, 0.0, -1.0}
-	triVBO := gls.NewVBO(vertices).AddAttrib(gls.VertexPosition)
-	geom.AddVBO(triVBO)
-	mat := material.NewStandard(math32.NewColor("DarkBlue"))
-	mesh := graphic.NewMesh(geom, mat)*/
-
+	//Initialize and add to scene airplane mesh
 	airplaneMesh, err := airplane.Init()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-
 	scene.Add(airplaneMesh)
 
 	/*
@@ -80,13 +72,7 @@ func main() {
 	*/
 
 	// Create and add lights to the scene
-	scene.Add(light.NewAmbient(&math32.Color{1.0, 1.0, 1.0}, 0.8))
-
-	/*
-		pointLight := light.NewPoint(&math32.Color{1, 1, 1}, 5.0)
-		pointLight.SetPosition(1, 0, 2)
-		scene.Add(pointLight)
-	*/
+	scene.Add(light.NewAmbient(&math32.Color{1.0, 1.0, 1.0}, 0.5))
 
 	// Create and add an axis helper to the scene
 	scene.Add(helper.NewAxes(0.5))
@@ -94,27 +80,39 @@ func main() {
 	// Set background color to gray
 	app.Gls().ClearColor(0.5, 0.5, 0.5, 1.0)
 
-	gen := terrain.NewGenerator()
-	gen.NewChunk(0,0)
-
+	//Initialize keyboard controller
 	keyboard := controller.InitKeyboard(app.IWindow)
-	plane := physics.NewPlane(math32.Vector3{0,0,0})
+
+	//Initialize plane physics
+	planePos := math32.Vector3{0,0,0}
+	plane := physics.NewPlane(math32.Vector3{0,50,0})
 	plane.Transform.Scale(&math32.Vector3{0.1,0.1,0.1})
 	airplaneMesh.SetMatrix(plane.Transform)
 	
+	//Camera offset used to make camera follow plane
 	cameraOffsetTranslate := math32.NewMatrix4().MakeTranslation(0, 10, 30)
 	cameraOffsetRotate := math32.NewMatrix4().MakeRotationX(-0.2)
-
 	cameraOffset := cameraOffsetRotate.Multiply(cameraOffsetTranslate)
+	
+	//Initialize terrain generator
+	terrain.Init(app.Renderer())
 
 	// Run the application
 	app.Run(func(renderer *renderer.Renderer, deltaTime time.Duration) {
+		//Render stuff
 		app.Gls().Clear(gls.DEPTH_BUFFER_BIT | gls.STENCIL_BUFFER_BIT | gls.COLOR_BUFFER_BIT)
 		renderer.Render(scene, cam)
 
+		//Process input and physics step
 		input := keyboard.ProcessInput()
 		plane.Step(deltaTime,input)
 		airplaneMesh.SetMatrix(plane.Transform)
+
+		//Generate terrain around plane
+		planePos.SetFromMatrixPosition(plane.Transform)
+		terrain.RenderTerrain(planePos.X,planePos.Z,scene)
+
+		//Camera follow plane
 		cameraMat := plane.Transform.Clone()
 		cameraMat.Multiply(cameraOffset)
 		cam.SetMatrix(cameraMat)

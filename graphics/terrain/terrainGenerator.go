@@ -3,17 +3,25 @@ package terrain
 import (
 	"github.com/ojrac/opensimplex-go"
 	"math/rand"
-	//"fmt"
 )
+
+const chunkSize int = 180
 
 // Generator contains the seeded noise instance
 type Generator struct{
 	noise opensimplex.Noise
+	Seed int64
 }
 
-// NewGenerator initializes the generator with a random seed
-func NewGenerator() *Generator {
-	return &Generator{noise: opensimplex.NewNormalized(rand.Int63())}
+// RandomGenerator initializes the generator with a random seed
+func RandomGenerator() *Generator {
+	seed := rand.Int63()
+	return NewGenerator(seed)
+}
+
+// NewGenerator initializes the generator with a given seed
+func NewGenerator(seed int64) *Generator {
+	return &Generator{noise: opensimplex.NewNormalized(seed), Seed: seed}
 }
 
 // GetData provides terrain data for a given point
@@ -21,19 +29,16 @@ func (g Generator) GetData(x,y float64) float64{
 	return g.noise.Eval2(x,y)
 }
 
-// Chunk contains terrain data for a 32x32 section
-type Chunk struct{
-	X, Y float64
-	Data [32][32]float64
-}
-
 // NewChunk generates a new chunk starting in the given point
-func (g Generator) NewChunk(x, y float64) *Chunk{
-	chunk := Chunk{X: x, Y: y}
+func (g Generator) NewChunk(x, y float64) *[chunkSize+1][chunkSize+1]float64{
+	var chunk [chunkSize+1][chunkSize+1]float64
 
-	for xi, yarr := range chunk.Data {
+	frequency := 30.0
+	intensity := 50.0
+
+	for xi, yarr := range chunk {
 		for yi := range yarr {
-			chunk.Data[xi][yi] = g.GetData(x + float64(xi), y + float64(yi))
+			chunk[xi][yi] = g.GetData((x + float64(xi))/frequency, (y + float64(yi))/frequency) * intensity
 		}
 	}
 
