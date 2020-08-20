@@ -8,12 +8,9 @@ import (
 	"github.com/g3n/engine/app"
 	"github.com/g3n/engine/camera"
 	"github.com/g3n/engine/core"
-	//"github.com/g3n/engine/geometry"
 	"github.com/g3n/engine/gls"
-	//"github.com/g3n/engine/graphic"
 	"github.com/g3n/engine/gui"
 	"github.com/g3n/engine/light"
-	//"github.com/g3n/engine/material"
 	"github.com/g3n/engine/math32"
 	"github.com/g3n/engine/renderer"
 	"github.com/g3n/engine/util/helper"
@@ -21,6 +18,7 @@ import (
 
 	"github.com/davidreis97/GoFlightSim/graphics/terrain"
 	"github.com/davidreis97/GoFlightSim/graphics/airplane"
+	"github.com/davidreis97/GoFlightSim/graphics/skybox"
 	"github.com/davidreis97/GoFlightSim/controller"
 	"github.com/davidreis97/GoFlightSim/physics"
 )
@@ -60,17 +58,6 @@ func main() {
 	}
 	scene.Add(airplaneMesh)
 
-	/*
-		// Create and add a button to the scene
-		btn := gui.NewButton("Make Red")
-		btn.SetPosition(100, 40)
-		btn.SetSize(40, 40)
-		btn.Subscribe(gui.OnClick, func(name string, ev interface{}) {
-			mat.SetColor(math32.NewColor("DarkRed"))
-		})
-		scene.Add(btn)
-	*/
-
 	// Create and add lights to the scene
 	scene.Add(light.NewAmbient(&math32.Color{1.0, 1.0, 1.0}, 0.5))
 
@@ -96,6 +83,10 @@ func main() {
 	
 	//Initialize terrain generator
 	terrain.Init(app.Renderer())
+	
+	//Generate and add skybox
+	skybox := skybox.Generate()
+	scene.Add(skybox)
 
 	// Run the application
 	app.Run(func(renderer *renderer.Renderer, deltaTime time.Duration) {
