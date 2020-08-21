@@ -43,12 +43,12 @@ func RenderTerrain(x, y float32, scene *core.Node){
 		setForUnrender[k] = true
 	}
 
-	for cx := currentcx - 1; cx <= currentcx + 1; cx++ {
-		for cy := currentcy - 1; cy <= currentcy + 1; cy++{
+	for cx := currentcx - 3; cx <= currentcx + 2; cx++ {
+		for cy := currentcy - 3; cy <= currentcy + 2; cy++{
 			currentChunkKey := GenChunkKey(cx,cy)
 			delete(setForUnrender, currentChunkKey)
 			if chunk, exists := terrainMap[currentChunkKey]; !exists {
-				RenderChunk(cx,cy,scene)
+				go RenderChunk(cx,cy,scene)
 			}else{
 				chunk.SetVisible(true)
 			}
