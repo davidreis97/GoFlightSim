@@ -21,7 +21,7 @@ func RandomGenerator() *Generator {
 
 // NewGenerator initializes the generator with a given seed
 func NewGenerator(seed int64) *Generator {
-	return &Generator{noise: opensimplex.NewNormalized(seed), Seed: seed}
+	return &Generator{noise: opensimplex.New(seed), Seed: seed}
 }
 
 // GetData provides terrain data for a given point
@@ -33,8 +33,8 @@ func (g Generator) GetData(x,y float64) float64{
 func (g Generator) NewChunk(x, y float64) *[chunkSize+1][chunkSize+1]float64{
 	var chunk [chunkSize+1][chunkSize+1]float64
 
-	frequency := 30.0
-	intensity := 50.0
+	frequency := 90.0
+	intensity := 60.0
 
 	for xi, yarr := range chunk {
 		for yi := range yarr {
